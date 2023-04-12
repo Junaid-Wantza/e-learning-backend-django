@@ -1,0 +1,12 @@
+apiclient==1.0.4
+asgiref==3.6.0
+certifi==2022.12.7
+Django==4.2
+django-debug-toolbar==4.0.0
+django-rest-framework==0.1.0
+djangorestframework==3.14.0
+Pillow==9.5.0
+python-dotenv==1.0.0
+pytz==2023.3
+sqlparse==0.4.3
+urllib3==1.26.15
