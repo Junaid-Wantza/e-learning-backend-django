@@ -1,3 +1,23 @@
 from django.contrib import admin
+from .models import User, Profile, Announcement, Course, LearningPath, Module, Unit, Content, TextContent, ImageContent, VideoContent, Tutorial, Notes, Quiz, QuizQuestion, QuizChoice, Answer, Student, Instructor, TakenQuiz
 
-# Register your models here.
+admin.site.register(User)
+admin.site.register(Profile)
+admin.site.register(Announcement)
+admin.site.register(Course)
+admin.site.register(LearningPath)
+admin.site.register(Module)
+admin.site.register(Unit)
+admin.site.register(Content)
+admin.site.register(TextContent)
+admin.site.register(ImageContent)
+admin.site.register(VideoContent)
+admin.site.register(Tutorial)
+admin.site.register(Notes)
+admin.site.register(Quiz)
+admin.site.register(QuizQuestion)
+admin.site.register(QuizChoice)
+admin.site.register(Answer)
+admin.site.register(Student)
+admin.site.register(Instructor)
+admin.site.register(TakenQuiz)

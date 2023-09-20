@@ -13,13 +13,15 @@ class User(AbstractUser):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    avatar = models.ImageField(upload_to = 'uploads/avatars', default = 'no-img.jpg', blank=True)
+    first_name = models.CharField(max_length=50,default='',blank=True,null=True)
+    last_name = models.CharField(max_length=50,default='',blank=True,null=True)
+    avatar = models.ImageField(upload_to = 'uploads/avatars', default = 'no-img.jpg', blank=True,null=True)
     phonenumber = models.CharField(max_length=255, blank=True, null=True)
     birth_date = models.DateField(default='1975-12-12')
-    bio = models.TextField(default='')
-    city = models.CharField(max_length=255, default='')
-    state = models.CharField(max_length=255, default='')
-    country = models.CharField(max_length=255, default='')
+    bio = models.TextField(default='',blank=True,null=True)
+    city = models.CharField(max_length=255, default='',blank=True,null=True)
+    state = models.CharField(max_length=255, default='',blank=True,null=True)
+    country = models.CharField(max_length=255, default='',blank=True,null=True)
 
     def __str__(self):
         return self.user.username
@@ -37,11 +39,122 @@ class Announcement(models.Model):
 
 
 class Course(models.Model):
-    name = models.CharField(max_length=30)
-    color = models.CharField(max_length=7, default='#007bff')
+    title = models.CharField(max_length=200,default='',blank=True,null=True)
+    description = models.TextField(default='Some default description')
+    # cover_image = models.ImageField(upload_to='course_covers/')
+    # enrollment_fee = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    # duration = models.PositiveIntegerField(help_text='Duration in days or weeks', null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.title
+
+
+class LearningPath(models.Model):
+    title = models.CharField(max_length=200,default='',blank=True,null=True)
+    description = models.TextField(default='Some default description')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='learning_paths')
+
+    def __str__(self):
+        return self.title
+    
+
+class Module(models.Model):
+    title = models.CharField(max_length=200,default='',blank=True,null=True)
+    description = models.TextField(default='Some default description')
+    learning_path = models.ForeignKey(LearningPath, on_delete=models.CASCADE, related_name='modules')
+
+    def __str__(self):
+        return self.title
+    
+
+class Unit(models.Model):
+    title = models.CharField(max_length=200,default='',blank=True,null=True)
+    description = models.TextField(default='Some default description')
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='units')
+
+    def __str__(self):
+        return self.title
+    
+
+class Content(models.Model):
+    CONTENT_TYPES = (
+        ('text', 'Text'),
+        ('image', 'Image'),
+        ('video', 'Video'),
+        ('quiz', 'Quiz'),
+        # ('assignment', 'Assignment'),
+        # Add more content types as needed
+    )
+
+    content_type = models.CharField(max_length=10, choices=CONTENT_TYPES)
+    title = models.CharField(max_length=200)
+    description = models.TextField(default='Some default description')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='course_contents', null=True, blank=True)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='unit_contents', null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class TextContent(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='text_contents',default='Module')
+    title = models.CharField(max_length=200)
+    text = models.TextField()
+
+    def __str__(self):
+        return self.title
+    
+
+class ImageContent(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='image_contents',default='Module')
+    title = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='content_images/')
+
+    def __str__(self):
+        return self.title
+
+
+class VideoContent(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='video_contents')
+    title = models.CharField(max_length=200)
+    video_url = models.URLField()
+
+    def __str__(self):
+        return self.title
+    
+
+class Quiz(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='quizzes',default='Module')
+    title = models.CharField(max_length=200,default='Quiz')
+
+    def __str__(self):
+        return self.title
+    
+
+class QuizQuestion(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField()
+
+    def __str__(self):
+        return self.question_text\
+        
+
+class QuizChoice(models.Model):
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, related_name='choices')
+    choice_text = models.CharField(max_length=200)
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.choice_text
+    
+
+class Assignment(models.Model):
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='assignments')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
 
 class Tutorial(models.Model):
     title = models.CharField(max_length=50)
@@ -68,27 +181,11 @@ class Notes(models.Model):
         self.cover.delete()
         super().delete(*args, **kwargs)    
 
-  
 
-class Quiz(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='quizzes')
-    name = models.CharField(max_length=255)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='quizzes')
-
-    def __str__(self):
-        return self.name
-
-
-class Question(models.Model):
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
-    text = models.CharField('Question', max_length=255)
-
-    def __str__(self):
-        return self.text
 
 
 class Answer(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField('Answer', max_length=255)
     is_correct = models.BooleanField('Correct answer', default=False)
 
